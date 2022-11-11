@@ -7,6 +7,7 @@ import pyrallis
 
 from dl_schema.cfg import TrainConfig
 from dl_schema.dataset import MNISTDataset
+from dl_schema.dataset import SatnogsDataset
 from dl_schema.models import build_model
 from dl_schema.recorder import Recorder
 from dl_schema.trainer import Trainer
@@ -37,15 +38,15 @@ def main():
     logger.info("loading datasets")
     train_dataset, test_dataset = None, None
     if (
-        cfg.data.train_root is not None
-        and Path(cfg.data.train_root).expanduser().exists()
+            cfg.data.train_root is not None
+            and Path(cfg.data.train_root).expanduser().exists()
     ):
-        train_dataset = MNISTDataset(split="train", cfg=cfg)
+        train_dataset = SatnogsDataset(csv='./data/train.csv')
     if (
-        cfg.data.test_root is not None
-        and Path(cfg.data.test_root).expanduser().exists()
+            cfg.data.test_root is not None
+            and Path(cfg.data.test_root).expanduser().exists()
     ):
-        test_dataset = MNISTDataset(split="test", cfg=cfg)
+        test_dataset = SatnogsDataset(csv='./data/test.csv')
 
     # create recorder and start mlflow run
     recorder = Recorder(cfg)

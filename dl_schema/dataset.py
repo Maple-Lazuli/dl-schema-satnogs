@@ -19,9 +19,9 @@ class MNISTDataset(Dataset):
     """Sample torch Dataset to be used with torch DataLoader."""
 
     def __init__(
-        self,
-        split="train",
-        cfg=TrainConfig(),
+            self,
+            split="train",
+            cfg=TrainConfig(),
     ):
         assert split in {"train", "test"}
         self.cfg = cfg
@@ -50,6 +50,21 @@ class MNISTDataset(Dataset):
         x = transform(x)
 
         return x, digit_id
+
+
+class SatnogsDataset(Dataset):
+
+    def __init__(self, csv):
+        self.annotations = pd.read_csv(csv)
+
+    def __len__(self):
+        return len(self.annotations)
+
+    def __getitem__(self, index):
+        example = self.annotations.iloc[index]
+        img = np.fromfile(example['waterfall_location'], dtype=np.uint8).reshape(-1, 623)
+        img = Image.fromarray(img)
+        return img, example['status']
 
 
 if __name__ == "__main__":
