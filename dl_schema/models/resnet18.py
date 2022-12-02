@@ -1,4 +1,5 @@
 """torchvision ResNet18"""
+import torch
 from torch import nn
 from torch.nn import functional as F
 from torchvision import models
@@ -7,33 +8,24 @@ from torchvision import models
 class ResNet18(nn.Module):
     """Sample ResNet model."""
 
-    def __init__(self, in_channels=3, keypoints=11, fc_units=4096, pretrained=True):
+    def __init__(self, cfg=None):
         super().__init__()
-        self.in_channels = in_channels
-        self.keypoints = keypoints
-        self.fc_units = fc_units
-        resnet18 = models.resnet18(pretrained=pretrained)
+        resnet18 = models.resnet18(pretrained=False)
         self.feature_extractor = nn.Sequential(*nn.ModuleList(resnet18.children())[:-1])
-        self.linear_layers = nn.Sequential(
-            nn.Linear(in_features=resnet18.fc.in_features, out_features=self.fc_units),
-            nn.ReLU(),
-            nn.Dropout2d(0.5),
-            nn.Linear(in_features=self.fc_units, out_features=self.fc_units),
-            nn.ReLU(),
-            nn.Dropout2d(0.5),
-            nn.Linear(in_features=self.fc_units, out_features=self.keypoints * 2),
-        )
-
-    def forward(self, x, targets=None):
+        self.fc = nn.Linear(in_features=resnet18.fc.in_features, out_features=1)
+        # may want to add more fully connected and dropouts
+    def forward(self, x):
         x = self.feature_extractor(x)
         # Flatten extra dimensions after average pooling layer.
         x = x.view(x.size(0), -1)
-        x = self.linear_layers(x)
-        x = x.view(-1, self.keypoints, 2)
+        x = self.fc(x)
+        return x
 
-        # If given targets, calculate loss
-        loss = None
-        if targets is not None:
-            loss = F.mse_loss(x, targets)
+if __name__ == "__main__":
+    img = torch.rand(1, 3,1542, 623)
 
-        return x, loss
+    res = ResNet18()
+    print(res(img))
+
+
+

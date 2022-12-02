@@ -6,6 +6,7 @@ Torch Dataloaders are iterables that abstract batching, shuffling, and multiproc
 """
 from pathlib import Path
 
+import torch
 from PIL import Image
 import numpy as np
 import pandas as pd
@@ -63,14 +64,19 @@ class SatnogsDataset(Dataset):
     def __getitem__(self, index):
         example = self.annotations.iloc[index]
         img = np.fromfile(example['waterfall_location'], dtype=np.uint8).reshape(-1, 623)
-        img = Image.fromarray(img)
-        return img, example['status']
+        #img = Image.fromarray(img)
+        #normalize psds
+        #
+        img = torch.from_numpy(img).type(torch.float)
+        img = img.unsqueeze(0).repeat(3,1,1)
+        target = torch.tensor(example['status']).unsqueeze(0).type(torch.float)
+        return img, target
 
 
 if __name__ == "__main__":
     """Test Dataset"""
 
-    train_data = MNISTDataset(split="train")
-    test_data = MNISTDataset(split="test")
-    print(train_data[0])
-    print(test_data[0])
+    train_data = SatnogsDataset("/home/maple/CodeProjects/satnogs_cnn/data/train.csv")
+    #test_data = SatnogsDataset
+    print(train_data[0][1].dtype)
+    #print(test_data[0])

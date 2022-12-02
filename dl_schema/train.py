@@ -52,7 +52,7 @@ def main():
     recorder = Recorder(cfg)
     recorder.create_experiment()
     with recorder.start_run():
-        # build model
+        # build model1
         logger.info(f"initializing model: {cfg.model.model_class}")
         model = build_model(model_class=cfg.model.model_class, cfg=cfg.model)
 
@@ -68,7 +68,7 @@ def main():
         # log config as params and yaml
         cfg_dict = pyrallis.encode(cfg)  # cfg as dict, encoded for yaml
         recorder.log_dict(cfg_dict, "archive/cfg.yaml")
-        recorder.log_params(flatten(cfg_dict))
+        #recorder.log_params(flatten(cfg_dict))
 
         # log relevant source files
         script_dir = Path(__file__).parent

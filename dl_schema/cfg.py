@@ -51,6 +51,7 @@ class Criterion(Enum):
     l2 = Wrap(l2)
     zero = Wrap(zero)
     crossentropy = Wrap(torch.nn.CrossEntropyLoss())
+    bin_crossentropy = Wrap(torch.nn.BCEWithLogitsLoss())
     accuracy = Wrap(accuracy)
 
     def __call__(self, *args, **kwargs):
@@ -74,15 +75,18 @@ class CNNConfig:
     # dropout percentage of fc2 layer
     dropout2: float = 0.50
 
+@dataclass()
+class ResConfig:
+    model_class: str = "ResNet18"
 
 @dataclass()
 class DataConfig:
     """config for model specification"""
 
     # root dir of train dataset
-    train_root: Union[str, Path] = "./data/processed/train"
+    train_root: Union[str, Path] = "/home/maple/CodeProjects/dl-schema-satnogs/dl_schema/data/"
     # root dir of test dataset
-    test_root: Optional[Union[Path, str]] = "./data/processed/test"
+    test_root: Optional[Union[Path, str]] = "/home/maple/CodeProjects/dl-schema-satnogs/dl_schema/data/"
     # shuffle train dataloader
     shuffle: bool = True
 
@@ -92,7 +96,7 @@ class LogConfig:
     """config for logging specification"""
 
     # mlflow tracking uri
-    uri: Optional[str] = "~/dev/dl-schema/dl_schema/mlruns"
+    uri: Optional[str] = "/home/maple/CodeProjects/dl-schema-satnogs/dl_schema/mlruns"
     # toggle asynchronous logging (not compatible with ray tune)
     enable_async: bool = True
     # number of threads to use in async logging (2 threads/core typically)
@@ -122,7 +126,7 @@ class TrainConfig:
     """config for training instance"""
 
     # config for model specification
-    model: CNNConfig = field(default_factory=CNNConfig)
+    model: ResConfig = field(default_factory=ResConfig)
     # config for data specification
     data: DataConfig = field(default_factory=DataConfig)
     # config for logging specification
@@ -138,9 +142,9 @@ class TrainConfig:
     # number of cpu workers in dataloader
     num_workers: int = 4
     # number of training steps (weight updates)
-    train_steps: int = 1000
+    train_steps: int = 100
     # batch size
-    bs: int = 64
+    bs: int = 4
     # learning rate (if onecycle, max_lr)
     lr: float = 3e-4
     # lr schedule type: (constant, onecycle, linear_warmup_cosine_decay)
@@ -162,7 +166,7 @@ class TrainConfig:
     # resume from last saved epoch in ckpt
     resume: bool = False
     # training loss function : (crossentropy, l1, l2, mse, zero)
-    loss: Criterion = Criterion.crossentropy
+    loss: Criterion = Criterion.bin_crossentropy
     # metric function 1: (l1, l2, mse, zero)
     metric1: Criterion = Criterion.accuracy
     # enable ray hyperparam tuning
